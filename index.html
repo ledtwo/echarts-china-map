@@ -1,0 +1,264 @@
+<!--
+	THIS EXAMPLE WAS DOWNLOADED FROM https://echarts.apache.org/examples/zh/editor.html?c=map-HK
+-->
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    .main {
+      background: lightslategray;
+    }
+
+    .option-box {
+      position: absolute;
+      top: 5%;
+      left: 5%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* height: 0px; */
+    }
+
+    .opt-bt {
+      padding: 5px 12px;
+      /* height: 40px; */
+      font-size: 1.2rem;
+      /* width: 80px; */
+      /* width: 5vh; */
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+
+<body style="height: 100%; margin: 0">
+  <!-- <div id="container" style="height: 100%"></div> -->
+  <div id="main" class="main" style="height: 100%"></div>
+  <!-- 操作栏 切换地图级别 -->
+  <div class="option-box">
+    <!-- <span>点击切换地图 </span> -->
+    <button class="opt-bt" id="china" onclick="showMap(0)">全国地图</button>
+    <button class="opt-bt hide" id="province" onclick="showMap(1)">河南省</button>
+    <button class="opt-bt hide" id="country" onclick="showMap(2)">许昌市</button>
+  </div>
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/jquery"></script>
+
+  <!-- <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.js"></script> -->
+  <!-- <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script> -->
+  <script src="https://lib.baomitu.com/echarts/4.9.0-rc.1/echarts.js"></script>
+  <!-- <script src="https://lib.baomitu.com/echarts/3.8.5/echarts.js"></script> -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/province/henan.js"></script>
+  <script type="text/javascript">
+    var dom = document.getElementById('main');
+    var myChart = echarts.init(dom, null, {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
+    var app = {};
+    // 定义允许展示的地市地图
+    var mapCountryName = ['许昌市'];
+    var mapProvinceName = ['河南'];
+    // 记录当前的地图展示级别
+    let level = 0
+    // 定义一个矩阵数组，用于存储每个地图的数据
+    //  国家、省、市
+    var mapOptions = [
+      // 第一条 全中国
+      {
+        tooltip: {
+          trigger: 'item'
+        },
+        toolbox: {
+          show: true,
+          orient: 'vertical',
+          x: 'right',
+          y: 'center',
+          feature: {
+            mark: { show: true },
+            saveAsImage: { show: true },
+            restore: { show: true },
+            // dataView: { show: true, readOnly: false }f
+          }
+        },
+        series: [
+          {
+            tooltip: {
+              trigger: 'item',
+              formatter: '{b}'
+            },
+            name: '选择器',
+            type: 'map',
+            mapType: 'china',
+            mapLocation: {
+              x: 'left',
+              y: 'top',
+              // width: '50%'
+            },
+            roam: true,
+            selectedMode: 'single',
+            itemStyle: {
+              normal: { label: { show: true } },
+              emphasis: { label: { show: true } }
+            },
+            data: []
+          }
+        ],
+        animation: false
+      },
+      // 第二条 省份
+      {
+        tooltip: {
+          trigger: 'item'
+        },
+        series: [
+          {
+            tooltip: {
+              trigger: 'item',
+              // formatter: '{b}'
+            },
+            name: '选择器',
+            type: 'map',
+            mapType: '河南',
+            mapLocation: {
+              x: 'left',
+              y: 'top',
+              // width: '50%'
+            },
+            roam: true,
+            selectedMode: 'single',
+            itemStyle: {
+              normal: { label: { show: true } },
+              emphasis: { label: { show: true } }
+            },
+            data: []
+          }
+        ],
+        animation: false
+      },
+      // 第三条 地市
+      {
+        tooltip: {
+          trigger: 'item'
+        },
+        series: [
+          {
+            tooltip: {
+              trigger: 'item',
+              // formatter: '{b}'
+            },
+            name: '选择器',
+            type: 'map',
+            mapType: '许昌市',
+            mapLocation: {
+              x: 'left',
+              y: 'top',
+            },
+            roam: true,
+            selectedMode: 'single',
+            itemStyle: {
+              normal: { label: { show: true } },
+              emphasis: { label: { show: true } }
+            },
+            data: []
+          }
+        ],
+        animation: false
+      }
+
+    ];
+    myChart.showLoading();
+    function initMap() {
+      myChart.setOption(mapOptions[0], true);
+      myChart.hideLoading();
+    }
+    function showMap(tempLevel) {
+      myChart.showLoading();
+      level = tempLevel;
+      myChart.setOption(mapOptions[level], true);
+      myChart.hideLoading();
+    }
+    // 按钮操作
+    function handlerOptionButton(selectedProvince) {
+      // 如果是全国，则隐藏省级、市按钮
+      if (level == 0) {
+        $('#province').hide();
+        $('#country').hide();
+      }
+      // 如果是省级，则展示省级按钮
+      if (level >= 1) {
+        if (level == 1) {
+          $('#province').text(selectedProvince);
+        }
+        $('#province').show();
+      }
+      // 如果是市级，则展示市级按钮
+      if (level >= 2) {
+        $('#country').text(selectedProvince);
+        $('#country').show();
+      }
+    }
+    $.get('./static/country.json', function (geoJson) {
+      myChart.hideLoading();
+      echarts.registerMap('许昌市', geoJson);
+      initMap()
+    })
+
+    // var ecConfig = require('echarts/config');
+    myChart.on('click', function (param) {
+      var selected = param.data;
+      var selectedProvince = param.name;
+      if (level >= 2 || typeof selectedProvince == 'undefined') {
+        return;
+      }
+      level++;
+      // 校验是否有省级地图
+      if (level == 1 && !mapProvinceName.includes(selectedProvince)) {
+        alert('没有该省份的地图数据');
+        level--;
+        return;
+      }
+      // 校验是否有地市白名单
+      if (level == 2 && !mapCountryName.includes(selectedProvince)) {
+        alert('您所选择的地市 暂无详细数据！请重新选择或补充！');
+        level--;
+        return;
+      }
+      handlerOptionButton(selectedProvince)
+      mapOptions[level].toolbox = {
+        show: true,
+        orient: 'vertical',
+        x: 'right',
+        y: 'center',
+        feature: {
+          mark: { show: true },
+          saveAsImage: { show: true },
+          restore: { show: true },
+          // dataView: { show: true, readOnly: false }f
+        }
+      },
+        mapOptions[level].series[0] = {
+          name: '地图数据',
+          type: 'map',
+          // mapType: 'china|' + selectedProvince,
+          mapType: selectedProvince,
+          itemStyle: {
+            normal: { label: { show: true } },
+            emphasis: { label: { show: true } }
+          },
+          roam: true,
+          data: []
+        };
+      myChart.setOption(mapOptions[level], true);
+    })
+    window.addEventListener('resize', myChart.resize);
+
+  </script>
+</body>
+
+</html>
